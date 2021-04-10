@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+	<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/moment@2.29.1/moment.min.js"></script>
+</head>
+<style type="text/css">
+	.wrap {
+		word-wrap: break-word;
+		white-space: pre-wrap;
+		width: 100%
+	}
+	/* Style the header */
+	.header {
+	  background: white;
+	}
+
+	/* Page content */
+	.content {
+	  padding: 16px;
+	}
+
+	/* The sticky class is added to the header with JS when it reaches its scroll position */
+	.sticky {
+	  position: fixed;
+	  top: 0;
+	  width: 100%
+	}
+
+	/* Add some top padding to the page content to prevent sudden quick movement (as the header gets a new position at the top of the page (position:fixed and top:0) */
+	.sticky + .content {
+	  padding-top: 140px;
+	}
+	.hidden div {
+		display: none;
+		cursor: initial;
+	}
+	.hidden.open div {
+		display: block;
+	}
+	.hidden {
+		cursor: pointer;
+		text-decoration: underline;
+	}
+	.hidden.open {
+		text-decoration: none;
+	}
+</style>
+<script type="text/javascript" src="index.js"></script>
+<body>
+
+<div class="header sticky">
+<input type="file" id="input-file" name=""/>
+	<div><span><input type="checkbox" id="wrap" name="Word wrap" checked="true"> Word wrap</span></div>
+	<div>
+		Start
+		<span><input type="datetime-local" id="start" name="From" checked="true"></span>
+		End
+		<span><input type="datetime-local" id="end" name="To" checked="true"></span>
+	</div>
+	<hr>
+	<div style="display: inline-block;width: 40%">
+	<div>
+		<span><input type="checkbox" id="network" name="Logs" disabled="disabled" checked="true"> Logs</span>
+		<span><input style="width: 70%" type="text" id="logs-filter" name="Network" placeholder="contains" checked="true"></span>
+	</div>
+	<div>
+		<span><input type="checkbox" id="network" name="Network" checked="true"> Network</span>
+		<span><input style="width: 70%" type="text" id="network-filter" name="Network" placeholder="contains" checked="true"></span>
+	</div>
+	</div>
+	<div style="display: inline-block;width: 55%">
+	<div>
+		<span><input type="checkbox" id="socket" name="Socket" checked="true"> Socket</span>
+		<span><input style="width: 70%" type="text" id="socket-filter" name="Socket" placeholder="contains" checked="true"></span>
+	</div>
+	<div>
+		<span><input type="checkbox" id="more" name="More Info" checked="true"> More Info</span>
+		<span><input style="width: 70%" type="text" id="more-filter" name="More Info" placeholder="contains" checked="true"></span>
+	</div>
+	</div>
+	<div><span><button id="apply">Apply</button></span></div>
+</div>
+<div id="output" class="wrap content"></div>
+</body>
+</html>
