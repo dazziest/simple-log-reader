@@ -48,9 +48,26 @@ $(function (argument) {
 	})
 
 	function getMomentDate(str){
-		let date = moment(str, 'DD/MM/YY HH.mm.ss A')
-		if(!date.isValid()){
-			date = moment(str, 'DD/MM/YY HH:mm:ss A')
+		let date = null
+		if (date = moment(str, 'DD/MM/YY HH.mm.ss A')){
+			if (date.isValid()){
+				return date
+			}
+		}
+		if (date = moment(str, 'DD/MM/YY HH:mm:ss A')){
+			if (date.isValid()){
+				return date
+			}
+		}
+		if (date = moment(str, 'DD/MM/YY, HH.mm.ss A')){
+			if (date.isValid()){
+				return date
+			}
+		}
+		if (date = moment(str, 'DD/MM/YY, HH:mm:ss A')){
+			if (date.isValid()){
+				return date
+			}
 		}
 		return date
 	}
@@ -72,7 +89,7 @@ $(function (argument) {
 
 		dirtyLogs.forEach((item, i)=>{
 			let log = {}
-			if (/^\[.[0-9]\/.[0-9]\/.[0-9]+\s+[0-9].+\]/.test(item)){
+			if (/(Info|Error|Warning|Debug)+\]:/.test(item)){
 				if (header) {
 					log.date = header.split("⚫️")[0].replace(/\[|\]/, '').trim()
 					log.header = header
