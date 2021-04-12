@@ -81,6 +81,18 @@ $(function (argument) {
 		}
 	}
 
+	function pretty(e){
+		let target = $(e.target)
+		if(!target.data().pretty && !target.is('pre')){
+			let content = JSON.parse(target.text().replaceAll(/\\"/g, '"'))
+			let pre = $('<pre></pre>');
+			pre.append(JSON.stringify(content, null, 2))
+			target.empty()
+			target.append(pre)
+			target.attr('data-pretty', true)
+		}
+	}
+
 	function parser(str){
 		let dirtyLogs = str.split(/\n/)
 		let header
@@ -89,13 +101,22 @@ $(function (argument) {
 
 		dirtyLogs.forEach((item, i)=>{
 			let log = {}
-			if (/(Info|Error|Warning|Debug)+\]:/.test(item)){
+			if (/(Info|Error|Warnings|Debug)+\]:/.test(item)){
 				if (header) {
+					if (info && info.indexOf('{') > -1){
+						let infoBody = info.replace('ℹ️ More info:', '')
+						console.log(info)
+						let infoObj = JSON.parse(infoBody)
+						if(infoObj.Body){
+							infoObj.Body = `<span class='pretty'>${infoObj.Body.replaceAll(/\\"/g, '"')}</span>`
+						}
+						log.info = `ℹ️ More info:\n${JSON.stringify(infoObj, null, 4)}`
+					}
 					log.date = header.split("⚫️")[0].replace(/\[|\]/, '').trim()
 					log.header = header
 					log.isNetwork = /https:\/\//.test(header)
 					log.isSocket = /socket/i.test(header)
-					log.info = info
+					log.info = log.info || ""
 					logs.push(log)
 				}
 				header = item
@@ -153,6 +174,8 @@ $(function (argument) {
 
 			let info = $(`<div>${item.info}</div>`);
 			let header = $(`<div>${item.header}</div>`);
+
+			info.find('.pretty').on('click', pretty)
 
 			if(isShowMore){
 				header.append(info)
