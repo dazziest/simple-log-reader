@@ -46,8 +46,27 @@
 	.hidden.open {
 		text-decoration: none;
 	}
+	.grayed {
+		color: #ccc;
+	}
 	.pretty {
 		cursor: pointer;
+	}
+	.item .action{
+		visibility: hidden;
+	}
+	.item:hover .action{
+		visibility: initial;
+		cursor: pointer;
+	}
+	.invisible * {
+		display: none;
+	}
+	.invisible:after {
+		content: "Removed for brevity";
+		padding-left: 12px;
+    	font-style: italic;
+    	color: #5d5b5b;
 	}
 </style>
 <script type="text/javascript" src="index.js"></script>
@@ -66,21 +85,21 @@
 	<div style="display: inline-block;width: 40%">
 	<div>
 		<span><input type="checkbox" id="logs" name="Logs" disabled="disabled" checked="true"> Logs</span>
-		<span><input disabled="disabled" style="width: 70%" type="text" id="logs-filter" name="Network" placeholder="contains" checked="true"></span>
+		<span><input style="width: 70%" type="text" id="logs-filter" name="Network" placeholder="contains"></span>
 	</div>
 	<div>
 		<span><input type="checkbox" id="network" name="Network" checked="true"> Network</span>
-		<span><input disabled="disabled" style="width: 70%" type="text" id="network-filter" name="Network" placeholder="contains" checked="true"></span>
+		<span><input disabled="disabled" style="width: 70%" type="text" id="network-filter" name="Network" placeholder="contains"></span>
 	</div>
 	</div>
 	<div style="display: inline-block;width: 55%">
 	<div>
 		<span><input type="checkbox" id="socket" name="Socket" checked="true"> Socket</span>
-		<span><input disabled="disabled" style="width: 70%" type="text" id="socket-filter" name="Socket" placeholder="contains" checked="false"></span>
+		<span><input disabled="disabled" style="width: 70%" type="text" id="socket-filter" name="Socket" placeholder="contains"></span>
 	</div>
 	<div>
-		<span><input type="checkbox" id="more" name="More Info" checked="true"> More Info</span>
-		<span><input  disabled="disabled"style="width: 70%" type="text" id="more-filter" name="More Info" placeholder="contains" checked="false"></span>
+		<span><input type="checkbox" id="more" name="More Info"> More Info</span>
+		<span><input  disabled="disabled"style="width: 70%" type="text" id="more-filter" name="More Info" placeholder="contains" ></span>
 	</div>
 	</div>
 	<div><span><button id="apply">Apply</button></span></div>

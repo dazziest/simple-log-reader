@@ -15,8 +15,10 @@ $(function (argument) {
 	var showWrap = $("#wrap")
 	var start = $("#start")
 	var end = $("#end")
+	var logFilter = $("#logs-filter")
 	var startDate
 	var endDate
+	var searchText = ""
 
 	input.on("change", (e)=>{
 		output.empty()
@@ -36,6 +38,10 @@ $(function (argument) {
 	end.on('change', e=>{
 		endDate = new Date(e.currentTarget.value)
 		render({end: endDate})
+	})
+
+	logFilter.on('change', e=>{
+		searchText = e.currentTarget.value
 	})
 
 	apply.on('click', e=>render())
@@ -69,6 +75,11 @@ $(function (argument) {
 				return date
 			}
 		}
+		if (date = moment(str, 'MM/DD/YY, HH:mm:ss A')){
+			if (date.isValid()){
+				return date
+			}
+		}
 		return date
 	}
 
@@ -79,6 +90,30 @@ $(function (argument) {
 		} else {
 			target.addClass("open")
 		}
+	}
+
+	function hide(e){
+		let invisible = $('<div class="invisible"></div>')
+		let target = $(e.target).closest('.item')
+		let prev = target.prev('.invisible')
+		let next = target.next('.invisible')
+		if (prev.length && next.length){
+			prev.append(next.children())
+			next.remove()
+		}
+		if(prev.length){
+			invisible = prev
+		} else if (next.length) {
+			invisible = next
+		} else {
+			invisible.insertBefore(target)
+		}
+
+		target.hide("fast", e => {
+			target.removeAttr('style')
+			target.detach()
+			invisible.append(target)
+		})
 	}
 
 	function pretty(e){
@@ -104,13 +139,16 @@ $(function (argument) {
 			if (/(Info|Error|Warnings|Debug)+\]:/.test(item)){
 				if (header) {
 					if (info && info.indexOf('{') > -1){
-						let infoBody = info.replace('ℹ️ More info:', '')
-						console.log(info)
-						let infoObj = JSON.parse(infoBody)
-						if(infoObj.Body){
-							infoObj.Body = `<span class='pretty'>${infoObj.Body.replaceAll(/\\"/g, '"')}</span>`
+						let infoBody = info.replace('ℹ️ More info:', '').replace(/}\[0m/g, '}')
+						try {
+							let infoObj = JSON.parse(infoBody)
+							if(infoObj.Body){
+								infoObj.Body = `<span class='pretty'>${infoObj.Body.replaceAll(/\\"/g, '"')}</span>`
+							}
+							log.info = `ℹ️ More info:\n${JSON.stringify(infoObj, null, 4)}`
+						} catch(e){
+
 						}
-						log.info = `ℹ️ More info:\n${JSON.stringify(infoObj, null, 4)}`
 					}
 					log.date = header.split("⚫️")[0].replace(/\[|\]/, '').trim()
 					log.header = header
@@ -165,7 +203,7 @@ $(function (argument) {
 				return
 			}
 
-			// let render = [textToRender, item.header]
+
 			let date = getMomentDate(item.date)
 
 			if(date.isSameOrAfter(last) || date.isBefore(first)){
@@ -173,9 +211,14 @@ $(function (argument) {
 			}
 
 			let info = $(`<div>${item.info}</div>`);
-			let header = $(`<div>${item.header}</div>`);
+			let header = $(`<div class="item">${item.header}</div>`);
+			let remove = $(`<span class="action" style="color: red">&#10006;</span>`);
 
 			info.find('.pretty').on('click', pretty)
+
+			header.prepend(remove)
+
+			remove.on('click', hide)
 
 			if(isShowMore){
 				header.append(info)
@@ -183,6 +226,12 @@ $(function (argument) {
 				header.append(info)
 				header.addClass('hidden')
 				header.on('click', expand)
+			}
+
+			if(searchText && (item.header.indexOf(searchText) > -1 || item.info.indexOf(searchText)> -1 )){
+				
+			} else if (searchText) {
+				header.addClass('grayed')
 			}
 
 			textToRender.append(header)
