@@ -49,6 +49,25 @@
 	.grayed {
 		color: #ccc;
 	}
+	.warning {
+		color: orange;
+	}
+	.error {
+		color: red;
+	}
+	.debug {
+		color: blue;
+	}
+
+	.grayed.warning {
+		color: rgba(255, 165, 0, .5);
+	}
+	.grayed.error {
+		color: rgba(255,0,0,.5);
+	}
+	.grayed.debug {
+		color: rgba(0,0,255,.5);
+	}
 	.pretty {
 		cursor: pointer;
 	}
@@ -99,7 +118,7 @@
 	</div>
 	<div>
 		<span><input type="checkbox" id="more" name="More Info"> More Info</span>
-		<span><input  disabled="disabled"style="width: 70%" type="text" id="more-filter" name="More Info" placeholder="contains" ></span>
+		<span><input style="width: 70%" type="text" id="more-filter" name="More Info" placeholder="contains" ></span>
 	</div>
 	</div>
 	<div><span><button id="apply">Apply</button></span></div>

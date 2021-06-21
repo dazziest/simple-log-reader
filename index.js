@@ -16,9 +16,11 @@ $(function (argument) {
 	var start = $("#start")
 	var end = $("#end")
 	var logFilter = $("#logs-filter")
+	var moreFilter = $("#more-filter")
 	var startDate
 	var endDate
 	var searchText = ""
+	var moreText = ""
 
 	input.on("change", (e)=>{
 		output.empty()
@@ -42,6 +44,13 @@ $(function (argument) {
 
 	logFilter.on('change', e=>{
 		searchText = e.currentTarget.value
+	})
+
+	moreFilter.on('change', e=>{
+		moreText = e.currentTarget.value
+		let isShowMoreDisabled = moreText
+
+		showMore.attr("disabled", isShowMoreDisabled)
 	})
 
 	apply.on('click', e=>render())
@@ -128,6 +137,21 @@ $(function (argument) {
 		}
 	}
 
+	function getLogType(header){
+		switch (true) {
+			case header.indexOf("Info]") > -1:
+				return "info"
+			case header.indexOf("Error]") > -1:
+				return "error"
+			case header.indexOf("Warnings]") > -1:
+				return "warning"
+			case header.indexOf("Debug]") > -1:
+				return "debug"
+			default:
+				return "info"
+		}
+	}
+
 	function parser(str){
 		let dirtyLogs = str.split(/\n/)
 		let header
@@ -150,11 +174,12 @@ $(function (argument) {
 
 						}
 					}
-					log.date = header.split("⚫️")[0].replace(/\[|\]/, '').trim()
+					log.date = header.split(new RegExp("⚫️|🔴|🔶|🔵|⚪️"))[0].replace(/\[|\]/, '').trim()
 					log.header = header
 					log.isNetwork = /https:\/\//.test(header)
 					log.isSocket = /socket/i.test(header)
 					log.info = log.info || ""
+					log.type = getLogType(header)
 					logs.push(log)
 				}
 				header = item
@@ -211,7 +236,7 @@ $(function (argument) {
 			}
 
 			let info = $(`<div>${item.info}</div>`);
-			let header = $(`<div class="item">${item.header}</div>`);
+			let header = $(`<div class="item ${item.type}">${item.header}</div>`);
 			let remove = $(`<span class="action" style="color: red">&#10006;</span>`);
 
 			info.find('.pretty').on('click', pretty)
@@ -220,7 +245,7 @@ $(function (argument) {
 
 			remove.on('click', hide)
 
-			if(isShowMore){
+			if(isShowMore || (moreText && (item.header.indexOf(moreText) > -1 || item.info.indexOf(moreText)> -1 ))){
 				header.append(info)
 			} else if(item.info) {
 				header.append(info)
