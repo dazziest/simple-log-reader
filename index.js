@@ -206,7 +206,7 @@ $(function (argument) {
 
 			let date = getMomentDate(item.date)
 
-			if(date.isSameOrAfter(last) || date.isBefore(first)){
+			if(date.isAfter(last) || date.isBefore(first)){
 				return
 			}
 
