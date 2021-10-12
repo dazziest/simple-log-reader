@@ -6,6 +6,7 @@ Date.prototype.toDateInputValue = (function() {
 
 $(function (argument) {
 	let now = new Date()
+	var main = $("#main")
 	var input = $("#input-file")
 	var output = $("#output")
 	var apply = $("#apply")
@@ -17,6 +18,7 @@ $(function (argument) {
 	var end = $("#end")
 	var logFilter = $("#logs-filter")
 	var moreFilter = $("#more-filter")
+	var sticky = $("#sticky")
 	var startDate
 	var endDate
 	var searchText = ""
@@ -62,6 +64,14 @@ $(function (argument) {
 		}
 	})
 
+	sticky.on('change', e=>{
+		if($(e.target).is(':checked')){
+			main.addClass("sticky")
+		} else {
+			main.removeClass("sticky")
+		}
+	})
+
 	function getMomentDate(str){
 		let date = null
 		if (date = moment(str, 'DD/MM/YY HH.mm.ss A')){
@@ -101,7 +111,7 @@ $(function (argument) {
 		}
 	}
 
-	function hide(e){
+	function hide(e, index){
 		let invisible = $('<div class="invisible"></div>')
 		let target = $(e.target).closest('.item')
 		let prev = target.prev('.invisible')
@@ -123,12 +133,14 @@ $(function (argument) {
 			target.detach()
 			invisible.append(target)
 		})
+		deleted(index)
 	}
 
 	function pretty(e){
 		let target = $(e.target)
 		if(!target.data().pretty && !target.is('pre')){
-			let content = JSON.parse(target.text().replaceAll(/\\"/g, '"'))
+			let text = target.text().replaceAll(/\\"/g, '"').replaceAll("'", '"')
+			let content = JSON.parse(text)
 			let pre = $('<pre></pre>');
 			pre.append(JSON.stringify(content, null, 2))
 			target.empty()
@@ -157,6 +169,7 @@ $(function (argument) {
 		let header
 		let info = ""
 		let logs = []
+		let index = 0
 
 		dirtyLogs.forEach((item, i)=>{
 			let log = {}
@@ -169,17 +182,37 @@ $(function (argument) {
 							if(infoObj.Body){
 								infoObj.Body = `<span class='pretty'>${infoObj.Body.replaceAll(/\\"/g, '"')}</span>`
 							}
-							log.info = `ℹ️ More info:\n${JSON.stringify(infoObj, null, 4)}`
+							if(infoObj.Key) {
+								infoObj.Key = infoObj.Key.replace(/[\u00A0-\u9999<>\&]/g, function(i) {
+									return '&#'+i.charCodeAt(0)+';';
+								})
+							}
+							if (infoObj.CURL){
+								infoObj.CURL = infoObj.CURL.replaceAll('\"', "'").replaceAll('\n', '')
+								infoObj.CURL = infoObj.CURL.replaceAll('-H', '<br>&nbsp;&nbsp;&nbsp;&nbsp;-H')
+								infoObj.CURL = infoObj.CURL.replaceAll('{', "<span class='pretty'>{")
+								infoObj.CURL = infoObj.CURL.replaceAll("}'", "}</spa>")
+							}
+							let wrapper = `<div>ℹ️ More info:`
+							for(var key in infoObj) {
+								wrapper += `<div>${key}: ${infoObj[key]}</div>`
+							}
+							wrapper += `</div>`
+							log.info = wrapper
 						} catch(e){
-
+							log.info = info
 						}
+					} else if (info.indexOf("More info") > -1) {
+						log.info = info
 					}
+					index = index + 1
 					log.date = header.split(new RegExp("⚫️|🔴|🔶|🔵|⚪️"))[0].replace(/\[|\]/, '').trim()
 					log.header = header
 					log.isNetwork = /https:\/\//.test(header)
 					log.isSocket = /socket/i.test(header)
 					log.info = log.info || ""
 					log.type = getLogType(header)
+					log.index = index
 					logs.push(log)
 				}
 				header = item
@@ -220,11 +253,16 @@ $(function (argument) {
 
 		end.val(last.toDate().toDateInputValue())
 
+		result = null
+
 		logs.forEach(item=>{
 			if(item.isNetwork && !isShowNetwork){
 				return
 			}
 			if(item.isSocket && !isShowSocket){
+				return
+			}
+			if(isDeleted(item.index)){
 				return
 			}
 
@@ -243,7 +281,9 @@ $(function (argument) {
 
 			header.prepend(remove)
 
-			remove.on('click', hide)
+			remove.on('click', e => {
+				hide(e, item.index)
+			})
 
 			if(isShowMore || (moreText && (item.header.indexOf(moreText) > -1 || item.info.indexOf(moreText)> -1 ))){
 				header.append(info)
@@ -253,8 +293,8 @@ $(function (argument) {
 				header.on('click', expand)
 			}
 
-			if(searchText && (item.header.indexOf(searchText) > -1 || item.info.indexOf(searchText)> -1 )){
-				
+			if(contains(searchText, item)){
+				result = result || header
 			} else if (searchText) {
 				header.addClass('grayed')
 			}
@@ -262,6 +302,42 @@ $(function (argument) {
 			textToRender.append(header)
 		})
 
+		if(result){
+			$('body').scroll(result)
+
+			result.get(0).scrollIntoView()
+		}
+
 		output.html(textToRender)
 	}
+
+	function contains(searchText = "", {header, info}){
+		if (searchText.length <= 0) 
+			return false
+
+		let reg = new RegExp(searchText)
+		return reg.test(header) || reg.test(info)
+	}
+
+	function isDeleted(index){
+		let deletedItems = deleted()
+
+		return deletedItems.includes(index + "")
+	}
+
+	function deleted(index) {
+		let items = (sessionStorage.getItem("deleted") || "").split(",")
+		if(index){
+			if(!items.includes(index + "")){
+				items.push(index)
+
+				var deletedData = items.join(",")
+				sessionStorage.setItem("deleted", deletedData)
+			}
+		} else {
+			return items
+		}
+	}
+	
+	render()
 })
