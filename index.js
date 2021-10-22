@@ -190,12 +190,19 @@ $(function (argument) {
 							if (infoObj.CURL){
 								infoObj.CURL = infoObj.CURL.replaceAll('\"', "'").replaceAll('\n', '')
 								infoObj.CURL = infoObj.CURL.replaceAll('-H', '<br>&nbsp;&nbsp;&nbsp;&nbsp;-H')
-								infoObj.CURL = infoObj.CURL.replaceAll('{', "<span class='pretty'>{")
-								infoObj.CURL = infoObj.CURL.replaceAll("}'", "}</spa>")
+
+								if(infoObj.CURL.indexOf('[') > -1 && infoObj.CURL.indexOf(']') > -1) {
+									infoObj.CURL = infoObj.CURL.replaceAll('[', "<span class='pretty'>[")
+									infoObj.CURL = infoObj.CURL.replaceAll("]'", "]</span>")
+								} else {
+									infoObj.CURL = infoObj.CURL.replaceAll('{', "<span class='pretty'>{")
+									infoObj.CURL = infoObj.CURL.replaceAll("}'", "}</span>")
+								}
 							}
 							let wrapper = `<div>ℹ️ More info:`
 							for(var key in infoObj) {
-								wrapper += `<div>${key}: ${infoObj[key]}</div>`
+								let value = Object.keys(infoObj[key]).length ? JSON.stringify(infoObj[key], null, 4) : infoObj[key]
+								wrapper += `<div>${key}: ${value}</div>`
 							}
 							wrapper += `</div>`
 							log.info = wrapper
@@ -242,6 +249,7 @@ $(function (argument) {
 				logs = JSON.parse(logStr)
 			} else {
 				output.text("No Data")
+				return
 			}
 		}
 
@@ -303,9 +311,13 @@ $(function (argument) {
 		})
 
 		if(result){
-			$('body').scroll(result)
-
-			result.get(0).scrollIntoView()
+			setTimeout(()=>{
+				result.get(0).scrollIntoView({
+		            behavior: 'auto',
+		            block: 'center',
+		            inline: 'center'
+		        })
+			}, 1000)
 		}
 
 		output.html(textToRender)
